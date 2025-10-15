@@ -1,0 +1,47 @@
+package:
+  name: niimath
+  version: "1.0.20250804"
+  description: niimath - a clone of fslmaths
+  target-architecture:
+    - x86_64
+    - aarch64
+  copyright:
+    - license: BSD-2-Clause
+
+environment:
+  contents:
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    repositories:
+      - https://packages.wolfi.dev/os
+    packages:
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - zlib-dev
+
+pipeline:
+  - uses: git-checkout
+    with:
+      expected-commit: c4756e5186183b9c6005834562cec209f1184406
+      repository: https://github.com/rordenlab/niimath
+      tag: v${{package.version}}
+  - runs: |
+      cd src
+      make all -j$(nproc)
+      install -D niimath "${{targets.destdir}}/usr/bin/niimath"
+
+update:
+  enabled: true
+  github:
+    identifier: rordenlab/niimath
+    strip-prefix: v
+
+test:
+  environment:
+    contents:
+      packages:
+        - wolfi-base
+  pipeline:
+    - runs: |
+        niimath
