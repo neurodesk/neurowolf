@@ -1,0 +1,144 @@
+package:
+  name: fltk
+  version: "1.4.4"
+  description: "A cross-platform C++ GUI toolkit"
+  url: https://www.fltk.org/
+  target-architecture:
+    - x86_64
+    - aarch64
+  copyright:
+    - license: LGPL-2.0-only WITH FLTK-exception
+
+environment:
+  contents:
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+      - ./melange.rsa.pub
+    repositories:
+      - https://packages.wolfi.dev/os
+      - ./packages
+    packages:
+      - autoconf
+      - automake
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - cairo-dev
+      - cmake
+      - glu-dev
+      - libjpeg-turbo-dev
+      - libpng-dev
+      - libx11-dev
+      - libxcursor-dev
+      - libxext-dev
+      - libxfixes-dev
+      - libxft-dev
+      - libxinerama-dev
+      - libxkbcommon-dev
+      - mesa-dev
+      - pango-dev
+      - samurai
+      - wayland-dev
+      - wayland-protocols
+
+pipeline:
+  - uses: fetch
+    with:
+      uri: https://github.com/fltk/fltk/releases/download/release-${{package.version}}/fltk-${{package.version}}-source.tar.gz
+      expected-sha256: 94b464cce634182c8407adac1be5fc49678986ca93285699b444352af89b4efe
+
+  - uses: cmake/configure
+    with:
+      opts: |
+        -DCMAKE_BUILD_TYPE=None \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DFLTK_OPTION_CAIRO_WINDOW=ON \
+        -DFLTK_OPTION_CAIRO_EXT=ON \
+        -DFLTK_BUILD_GL=ON \
+        -DFLTK_BUILD_SHARED_LIBS=ON \
+        -DFLTK_BUILD_TEST=OFF
+
+  - uses: cmake/build
+
+  - uses: cmake/install
+
+  - runs: |
+      # remove static libs
+      rm -v "${{targets.contextdir}}"/usr/lib/*.a
+
+  - uses: strip
+
+subpackages:
+  - name: fltk-dev
+    description: fltk dev
+    pipeline:
+      - uses: split/dev
+
+  - name: "fltk-doc"
+    description: "fltk documentation"
+    pipeline:
+      - uses: split/manpages
+
+  - name: "fltk-fluid"
+    description: "Fast Light User Interface Designer"
+    pipeline:
+      - runs: |
+          PACKAGE_DIR="${{targets.destdir}}"
+          mkdir -p "${{targets.contextdir}}/usr/bin" "${{targets.contextdir}}/usr/share"
+          mv "$PACKAGE_DIR"/usr/bin/fluid* "${{targets.contextdir}}/usr/bin"
+          mv "$PACKAGE_DIR"/usr/share/applications "${{targets.contextdir}}/usr/share"
+          mv "$PACKAGE_DIR"/usr/share/icons "${{targets.contextdir}}/usr/share"
+          mv "$PACKAGE_DIR"/usr/share/mime "${{targets.contextdir}}/usr/share"
+    test:
+      pipeline:
+        - runs: |
+            fluid --version
+
+  - name: "libfltk"
+    description: "libfltk"
+    pipeline:
+      - runs: |
+          mkdir -p ${{targets.subpkgdir}}/usr/lib
+          mv ${{targets.destdir}}/usr/lib/libfltk.so.* ${{targets.subpkgdir}}/usr/lib
+
+  - name: "libfltk_cairo"
+    description: "libfltk_cairo"
+    pipeline:
+      - runs: |
+          mkdir -p ${{targets.subpkgdir}}/usr/lib
+          mv ${{targets.destdir}}/usr/lib/libfltk_cairo.so.* ${{targets.subpkgdir}}/usr/lib
+
+  - name: "libfltk_forms"
+    description: "libfltk_forms"
+    pipeline:
+      - runs: |
+          mkdir -p ${{targets.subpkgdir}}/usr/lib
+          mv ${{targets.destdir}}/usr/lib/libfltk_forms.so.* ${{targets.subpkgdir}}/usr/lib
+
+  - name: "libfltk_gl"
+    description: "libfltk_gl"
+    pipeline:
+      - runs: |
+          mkdir -p ${{targets.subpkgdir}}/usr/lib
+          mv ${{targets.destdir}}/usr/lib/libfltk_gl.so.* ${{targets.subpkgdir}}/usr/lib
+
+  - name: "libfltk_images"
+    description: "libfltk_images"
+    pipeline:
+      - runs: |
+          mkdir -p ${{targets.subpkgdir}}/usr/lib
+          mv ${{targets.destdir}}/usr/lib/libfltk_images.so.* ${{targets.subpkgdir}}/usr/lib
+
+update:
+  enabled: true
+  release-monitor:
+    identifier: 823
+
+test:
+  environment:
+    contents:
+      packages:
+        - wolfi-base
+  pipeline:
+    - runs: |
+        fltk-options --version
