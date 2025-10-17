@@ -1,0 +1,85 @@
+package:
+  name: suitesparse
+  version: "7.11.0"
+  description: A collection of sparse matrix libraries
+  url: http://faculty.cse.tamu.edu/davis/suitesparse.html
+  target-architecture:
+    - x86_64
+    - aarch64
+  copyright:
+    - license: BSD-3-Clause AND LGPL-2.1-or-later AND GPL-2.0-or-later
+    - paths:
+        - /usr/lib/libgraphblas.so.*
+        - /usr/lib/liblagraph.so.*
+        - /usr/lib/liblagraphx.so.*
+      license: Apache-2.0 AND GPL-3.0-or-later
+
+environment:
+  contents:
+    keyring:
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+      - ./melange.rsa.pub
+    repositories:
+      - https://packages.wolfi.dev/os
+      - ./packages
+    packages:
+      - autoconf
+      - automake
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - cmake
+      - gmp-dev
+      - mpfr-dev
+      - openblas-dev
+
+pipeline:
+  - uses: git-checkout
+    with:
+      expected-commit: b35a1f9318f4bd42085f4b5ea56f29c89d342d4d
+      repository: https://github.com/DrTimothyAldenDavis/SuiteSparse
+      tag: v${{package.version}}
+
+  - runs: |
+      make library JOBS=$(nproc) \
+        CMAKE_OPTIONS="\
+          -G 'Unix Makefiles' \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DCMAKE_INSTALL_INCLUDEDIR=/usr/include/suitesparse \
+          -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+          -DCMAKE_VERBOSE_MAKEFILE=ON \
+          "
+
+  - runs: |
+      make tests JOBS=$(nproc)
+
+  - uses: autoconf/make-install
+
+  - uses: strip
+
+subpackages:
+  - name: suitesparse-static
+    description: suitesparse static
+    pipeline:
+      - uses: split/static
+
+  - name: suitesparse-dev
+    description: suitesparse dev
+    pipeline:
+      - uses: split/dev
+
+  - name: suitesparse-graphblas
+    description: Graph algorithms in the language of linear algebra
+    pipeline:
+      - runs: |
+          mkdir -p ${{targets.subpkgdir}}/usr/lib
+          mv \
+            ${{targets.destdir}}/usr/lib/libgraphblas.so.* \
+            ${{targets.destdir}}/usr/lib/liblagraph.so.* \
+            ${{targets.destdir}}/usr/lib/liblagraphx.so.* \
+            ${{targets.subpkgdir}}/usr/lib
+
+update:
+  enabled: true
+  release-monitor:
+    identifier: 4908
