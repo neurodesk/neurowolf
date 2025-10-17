@@ -39,6 +39,10 @@ pipeline:
     uses: autoconf/make
   
   - working-directory: src
+    runs: |
+      make check
+  
+  - working-directory: src
     uses: autoconf/make-install
     with:
       opts: |
