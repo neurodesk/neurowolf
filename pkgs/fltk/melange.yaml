@@ -71,6 +71,18 @@ pipeline:
 subpackages:
   - name: fltk-dev
     description: fltk dev
+    dependencies:
+      runtime:
+        - cairo-dev
+        - libjpeg-turbo-dev
+        - libpng-dev
+        - libx11-dev
+        - libxext-dev
+        - libxft-dev
+        - libxinerama-dev
+        - mesa-dev
+        - pango-dev
+        - wayland-dev
     pipeline:
       - uses: split/dev
 
