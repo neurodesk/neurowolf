@@ -46,6 +46,9 @@ pipeline:
 
   - uses: cmake/build
 
+  - runs: |
+      ctest --test-dir . -E test_tchinx
+
   - uses: cmake/install
 
   - uses: strip
