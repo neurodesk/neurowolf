@@ -65,6 +65,11 @@ subpackages:
 
   - name: suitesparse-dev
     description: suitesparse dev
+    dependencies:
+      runtime:
+        - gmp-dev
+        - mpfr-dev
+        - openblas-dev
     pipeline:
       - uses: split/dev
 
