@@ -64,3 +64,5 @@ update:
   enabled: true
   release-monitor:
     identifier: 319990
+
+test:
