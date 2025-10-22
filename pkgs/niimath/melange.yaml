@@ -1,6 +1,7 @@
 package:
   name: niimath
   version: "1.0.20250804"
+  epoch: 0
   description: niimath - a clone of fslmaths
   url: https://github.com/rordenlab/niimath
   target-architecture:

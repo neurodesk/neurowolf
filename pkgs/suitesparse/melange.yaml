@@ -1,6 +1,7 @@
 package:
   name: suitesparse
   version: "7.11.0"
+  epoch: 0
   description: A collection of sparse matrix libraries
   url: http://faculty.cse.tamu.edu/davis/suitesparse.html
   target-architecture:

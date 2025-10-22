@@ -1,6 +1,7 @@
 package:
   name: fltk
   version: "1.4.4"
+  epoch: 0
   description: "A cross-platform C++ GUI toolkit"
   url: https://www.fltk.org/
   target-architecture:

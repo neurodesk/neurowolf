@@ -1,6 +1,7 @@
 package:
   name: tcsh
   version: "6.24.16"
+  epoch: 0
   description: C shell with file name completion and command line editing
   url: https://www.tcsh.org
   target-architecture:

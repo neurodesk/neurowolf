@@ -1,6 +1,7 @@
 package:
   name: libcerf
   version: "3.2"
+  epoch: 0
   description: Library for fast, whole-buffer DEFLATE-based compression and decompression
   url: https://jugit.fz-juelich.de/mlz/libcerf/
   target-architecture:
