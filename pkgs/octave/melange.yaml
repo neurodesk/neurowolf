@@ -4,20 +4,11 @@ package:
   epoch: 0
   description: "High-level language for numerical computations"
   url: https://octave.org
-  target-architecture:
-    - x86_64
-    - aarch64
   copyright:
     - license: GPL-3.0-or-later
 
 environment:
   contents:
-    keyring:
-      - ./melange.rsa.pub
-      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-    repositories:
-      - ./packages
-      - https://packages.wolfi.dev/os
     packages:
       - arpack-dev
       - autoconf
@@ -56,9 +47,8 @@ environment:
       - qhull-dev
       - qrupdate-dev
       - qscintilla-dev
-      # qt is disabled as qttools package is not available
       # - qt5-qttools-dev
-      # - qt5-qtbase-dev
+      - qt5-qtbase-dev
       - rapidjson-dev
       - readline-dev
       - suitesparse-dev
@@ -99,10 +89,10 @@ update:
     identifier: 2528
 
 test:
-  environment:
-    contents:
-      packages:
-        - wolfi-base
   pipeline:
-    - runs: |
-        octave --version
+    - uses: test/tw/help-check
+      with:
+        bins: octave
+    - uses: test/tw/ver-check
+      with:
+        bins: octave

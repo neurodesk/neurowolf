@@ -4,18 +4,11 @@ package:
   epoch: 0
   description: C shell with file name completion and command line editing
   url: https://www.tcsh.org
-  target-architecture:
-    - x86_64
-    - aarch64
   copyright:
     - license: BSD-4-Clause-UC
 
 environment:
   contents:
-    keyring:
-      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-    repositories:
-      - https://packages.wolfi.dev/os
     packages:
       - build-base
       - busybox
@@ -44,16 +37,21 @@ pipeline:
 
   - uses: strip
 
+subpackages:
+  - name: tcsh-doc
+    pipeline:
+      - uses: split/manpages
+      - uses: split/infodir
+    test:
+      pipeline:
+        - uses: test/docs
+
 update:
   enabled: true
   release-monitor:
     identifier: 4945
 
 test:
-  environment:
-    contents:
-      packages:
-        - wolfi-base
   pipeline:
     - runs: |
         tcsh --version

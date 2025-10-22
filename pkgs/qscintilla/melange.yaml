@@ -4,20 +4,11 @@ package:
   epoch: 0
   description: QScintilla is a port to Qt of Neil Hodgson's Scintilla C++ editor control
   url: https://www.riverbankcomputing.com/software/qscintilla
-  target-architecture:
-    - x86_64
-    - aarch64
   copyright:
     - license: GPL-3.0-only
 
 environment:
   contents:
-    keyring:
-      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-      - ./melange.rsa.pub
-    repositories:
-      - https://packages.wolfi.dev/os
-      - ./packages
     packages:
       - autoconf
       - automake
@@ -35,14 +26,14 @@ pipeline:
   - working-directory: src
     runs: |
       qmake-qt5
-  
+
   - working-directory: src
     uses: autoconf/make
   
   - working-directory: src
     runs: |
       make check
-  
+
   - working-directory: src
     uses: autoconf/make-install
     with:
@@ -56,7 +47,11 @@ subpackages:
     description: qscintilla dev
     pipeline:
       - uses: split/dev
-  
+    test:
+      pipeline:
+        - uses: test/pkgconf
+        - uses: test/tw/ldd-check
+
   - name: qscintilla-lang
     description: qscintilla lang
     pipeline:
@@ -68,3 +63,7 @@ update:
   enabled: true
   release-monitor:
     identifier: 10082
+
+test:
+  pipeline:
+    - uses: test/tw/ldd-check

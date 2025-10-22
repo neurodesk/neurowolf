@@ -4,20 +4,11 @@ package:
   epoch: 0
   description: "Utility for plotting graphs"
   url: http://www.gnuplot.info
-  target-architecture:
-    - x86_64
-    - aarch64
   copyright:
     - license: MIT
 
 environment:
   contents:
-    keyring:
-      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-      - ./melange.rsa.pub
-    repositories:
-      - https://packages.wolfi.dev/os
-      - ./packages
     packages:
       - autoconf
       - automake
@@ -66,6 +57,9 @@ subpackages:
     description: "gnuplot documentation"
     pipeline:
       - uses: split/manpages
+    test:
+      pipeline:
+        - uses: test/docs
 
 update:
   enabled: true
@@ -73,10 +67,6 @@ update:
     identifier: 1216
 
 test:
-  environment:
-    contents:
-      packages:
-        - wolfi-base
   pipeline:
     - runs: |
         gnuplot --version

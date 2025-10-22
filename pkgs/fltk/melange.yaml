@@ -4,20 +4,11 @@ package:
   epoch: 0
   description: "A cross-platform C++ GUI toolkit"
   url: https://www.fltk.org/
-  target-architecture:
-    - x86_64
-    - aarch64
   copyright:
     - license: LGPL-2.0-only WITH FLTK-exception
 
 environment:
   contents:
-    keyring:
-      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-      - ./melange.rsa.pub
-    repositories:
-      - https://packages.wolfi.dev/os
-      - ./packages
     packages:
       - autoconf
       - automake
@@ -75,6 +66,7 @@ subpackages:
     dependencies:
       runtime:
         - cairo-dev
+        - glu-dev
         - libjpeg-turbo-dev
         - libpng-dev
         - libx11-dev
@@ -86,11 +78,17 @@ subpackages:
         - wayland-dev
     pipeline:
       - uses: split/dev
+    test:
+      pipeline:
+        - uses: test/tw/header-check
 
   - name: "fltk-doc"
     description: "fltk documentation"
     pipeline:
       - uses: split/manpages
+    test:
+      pipeline:
+        - uses: test/docs
 
   - name: "fltk-fluid"
     description: "Fast Light User Interface Designer"
@@ -113,6 +111,9 @@ subpackages:
       - runs: |
           mkdir -p ${{targets.subpkgdir}}/usr/lib
           mv ${{targets.destdir}}/usr/lib/libfltk.so.* ${{targets.subpkgdir}}/usr/lib
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
 
   - name: "libfltk_cairo"
     description: "libfltk_cairo"
@@ -120,6 +121,9 @@ subpackages:
       - runs: |
           mkdir -p ${{targets.subpkgdir}}/usr/lib
           mv ${{targets.destdir}}/usr/lib/libfltk_cairo.so.* ${{targets.subpkgdir}}/usr/lib
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
 
   - name: "libfltk_forms"
     description: "libfltk_forms"
@@ -127,6 +131,9 @@ subpackages:
       - runs: |
           mkdir -p ${{targets.subpkgdir}}/usr/lib
           mv ${{targets.destdir}}/usr/lib/libfltk_forms.so.* ${{targets.subpkgdir}}/usr/lib
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
 
   - name: "libfltk_gl"
     description: "libfltk_gl"
@@ -134,6 +141,9 @@ subpackages:
       - runs: |
           mkdir -p ${{targets.subpkgdir}}/usr/lib
           mv ${{targets.destdir}}/usr/lib/libfltk_gl.so.* ${{targets.subpkgdir}}/usr/lib
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
 
   - name: "libfltk_images"
     description: "libfltk_images"
@@ -141,6 +151,9 @@ subpackages:
       - runs: |
           mkdir -p ${{targets.subpkgdir}}/usr/lib
           mv ${{targets.destdir}}/usr/lib/libfltk_images.so.* ${{targets.subpkgdir}}/usr/lib
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
 
 update:
   enabled: true
@@ -148,10 +161,5 @@ update:
     identifier: 823
 
 test:
-  environment:
-    contents:
-      packages:
-        - wolfi-base
   pipeline:
-    - runs: |
-        fltk-options --version
+    - uses: test/tw/ldd-check

@@ -3,18 +3,11 @@ package:
   version: "10.06.0"
   epoch: 1
   description: Interpreter for the PostScript language and for PDF
-  target-architecture:
-    - x86_64
-    - aarch64
   copyright:
     - license: AGPL-3.0-or-later
 
 environment:
   contents:
-    keyring:
-      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
-    repositories:
-      - https://packages.wolfi.dev/os
     packages:
       - autoconf
       - automake
@@ -116,6 +109,9 @@ subpackages:
     pipeline:
       - uses: split/manpages
     description: ghostscript manpages
+    test:
+      pipeline:
+        - uses: test/docs
 
   - name: "ghostscript-dbg"
     description: "ghostscript Debug Symbols"
@@ -124,6 +120,9 @@ subpackages:
     dependencies:
       runtime:
         - ghostscript
+    test:
+      pipeline:
+        - runs: find /usr/lib/debug -name "*.debug" -type f | grep -q .
 
   - name: ghostscript-dev
     pipeline:
@@ -132,6 +131,10 @@ subpackages:
     dependencies:
       runtime:
         - ghostscript
+    test:
+      pipeline:
+        - uses: test/pkgconf
+        - uses: test/tw/ldd-check
 
 update:
   enabled: true
@@ -172,3 +175,4 @@ test:
         ps2ascii --help
         ps2epsi --help
         unix-lpr.sh --help
+    - uses: test/tw/ldd-check
