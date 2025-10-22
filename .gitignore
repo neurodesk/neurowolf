@@ -1,3 +1,4 @@
+.cache/
 packages/
 melange.rsa
 melange.rsa.pub
