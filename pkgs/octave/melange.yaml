@@ -1,0 +1,108 @@
+package:
+  name: octave
+  version: "10.3.0"
+  epoch: 0
+  description: "High-level language for numerical computations"
+  url: https://octave.org
+  target-architecture:
+    - x86_64
+    - aarch64
+  copyright:
+    - license: GPL-3.0-or-later
+
+environment:
+  contents:
+    keyring:
+      - ./melange.rsa.pub
+      - https://packages.wolfi.dev/os/wolfi-signing.rsa.pub
+    repositories:
+      - ./packages
+      - https://packages.wolfi.dev/os
+    packages:
+      - arpack-dev
+      - autoconf
+      - automake
+      - bison
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - curl-dev
+      - fftw-dev
+      - fltk-dev
+      - fontconfig-dev
+      - freetype-dev
+      - gfortran
+      - ghostscript-dev
+      - glpk
+      - glu-dev
+      - gnuplot
+      - graphicsmagick-dev
+      - gtk-3-dev
+      - hdf5-dev
+      - imagemagick-dev
+      - lcms2-dev
+      - libltdl
+      - libsm-dev
+      - libsndfile-dev
+      - libtool
+      - libxcursor-dev
+      - libxfixes-dev
+      - libxkbcommon-dev
+      - openblas-dev
+      - openjdk-21-default-jdk
+      - pcre2-dev
+      - perl
+      - portaudio-dev
+      - qhull-dev
+      - qrupdate-dev
+      - qscintilla-dev
+      # qt is disabled as qttools package is not available
+      # - qt5-qttools-dev
+      # - qt5-qtbase-dev
+      - rapidjson-dev
+      - readline-dev
+      - suitesparse-dev
+      - texinfo
+      - xz-dev
+      - zlib-dev
+
+pipeline:
+  - uses: fetch
+    with:
+      uri: https://ftpmirror.gnu.org/gnu/octave/octave-${{package.version}}.tar.xz
+      expected-sha256: 92ae9bf2edcd288bd2df9fd0b4f7aa719b49d3940fceb154c5fdcd846f254da1
+
+  # https://savannah.gnu.org/bugs/?63318
+  - uses: autoconf/configure
+    with:
+      opts: |
+        --enable-shared \
+        --disable-static \
+        --disable-rpath \
+        CXXFLAGS="$CXXFLAGS -U_GLIBCXX_ASSERTIONS"
+
+  - uses: autoconf/make
+
+  - runs: |
+      make check
+
+  - uses: autoconf/make-install
+
+  - runs: |
+      rm -r ${{targets.destdir}}/usr/share/octave/${{package.version}}/etc/tests
+
+  - uses: strip
+
+update:
+  enabled: true
+  release-monitor:
+    identifier: 2528
+
+test:
+  environment:
+    contents:
+      packages:
+        - wolfi-base
+  pipeline:
+    - runs: |
+        octave --version
