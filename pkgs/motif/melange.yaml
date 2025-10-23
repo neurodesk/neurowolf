@@ -1,0 +1,120 @@
+# Based on https://gitlab.alpinelinux.org/alpine/aports/-/blob/master/community/motif/APKBUILD
+package:
+  name: motif
+  version: "2.3.8"
+  epoch: 0
+  description: The Motif library
+  url: https://motif.ics.com/
+  copyright:
+    - license: LGPL-2.1-or-later
+
+environment:
+  contents:
+    packages:
+      - autoconf
+      - automake
+      - bison
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - flex
+      - flex-dev
+      - libtool
+      - libx11-dev
+      - libxext-dev
+      - libxft-dev
+      - libxpm-dev
+      - libxt-dev
+      - xbitmaps-dev
+
+pipeline:
+  - uses: fetch
+    with:
+      uri: https://downloads.sourceforge.net/project/motif/Motif%20${{package.version}}%20Source%20Code/motif-${{package.version}}.tar.gz
+      expected-sha256: 859b723666eeac7df018209d66045c9853b50b4218cecadb794e2359619ebce7
+
+  - uses: patch
+    with:
+      patches: |
+        02-fix-format-security.patch
+        03-no-demos.patch
+        06-cast-size_t-to-int.patch
+        07-fix_lintian_reported_manpage_typos.patch
+        08-fix_hyphen_in_man_pages.patch
+        09-fix_typo_in_libxm.patch
+        10-fix_manpage-has-bad-whatis-entry.patch
+        11-fix_underlinking.patch
+        13-fix_hardcoded_x11rgb_path.patch
+        15-link_uil_against_libuil.patch
+        16-fix-undefined-use-of-sprintf.patch
+        17-switch-to-system-iswspace.patch
+        18-option-main.patch
+
+  - runs: |
+      touch NEWS AUTHORS
+      autoreconf -fi
+
+  # reasons for --disable- flags:
+  # png, jpeg: most programs that use png and jpeg use the libraries directly;
+  # enabling these mainly matters if you want to point the resources at a
+  # png/jpeg image.
+  # printing: this is Xprint support; only CDE uses this, others print directly.
+  # demos: one of the demos can break the build
+  - uses: autoconf/configure
+    with:
+      opts: |
+        --disable-demos \
+        --disable-printing \
+        --disable-jpeg \
+        --disable-png \
+        --enable-xft \
+        --disable-static \
+        CFLAGS="$CFLAGS -Wno-implicit-function-declaration -std=gnu17" \
+        LDFLAGS="$LDFLAGS -lX11"
+
+  - uses: autoconf/make
+
+  - uses: autoconf/make-install
+
+  - uses: strip
+
+subpackages:
+  - name: motif-dev
+    description: motif dev
+    pipeline:
+      - uses: split/dev
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
+
+  - name: motif-doc
+    description: motif documentation
+    pipeline:
+      - uses: split/manpages
+    test:
+      pipeline:
+        - uses: test/docs
+
+  - name: mwm
+    description: Motif Window Manager
+    pipeline:
+      - runs: |
+          mkdir -p "${{targets.subpkgdir}}"/usr/bin "${{targets.subpkgdir}}"/usr/lib/X11
+          mv "${{targets.destdir}}"/usr/bin/mwm "${{targets.subpkgdir}}"/usr/bin
+          mv "${{targets.destdir}}"/usr/bin/xmbind "${{targets.subpkgdir}}"/usr/bin
+          sed -e 's/\(xterm\)/xfce4-terminal||mrxvt||urxvt||st||\1/g' \
+          "${{targets.destdir}}"/usr/lib/X11/system.mwmrc > "${{targets.subpkgdir}}"/usr/lib/X11/system.mwmrc
+    test:
+      pipeline:
+        - uses: test/tw/help-check
+          with:
+            bins: mwm xmbind
+
+update:
+  enabled: true
+  release-monitor:
+    identifier: 2015
+
+test:
+  pipeline:
+    - uses: test/tw/ldd-check
