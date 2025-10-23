@@ -1,0 +1,82 @@
+package:
+  name: netcdf
+  version: "4.9.3"
+  epoch: 0
+  description: Libraries for the Unidata network Common Data Format
+  url: https://www.unidata.ucar.edu/software/netcdf/
+  copyright:
+    - license: BSD-3-Clause
+
+environment:
+  contents:
+    packages:
+      - autoconf
+      - automake
+      - build-base
+      - busybox
+      - bzip2-dev
+      - ca-certificates-bundle
+      - cmake
+      - curl-dev
+      - hdf5-dev
+      - libaec-dev
+      - libxml2-dev
+      - samurai
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/Unidata/netcdf-c
+      tag: v${{package.version}}
+      expected-commit: 3a6b1debf1557f07b606ce3653e44f0d711203be
+
+  - uses: cmake/configure
+    with:
+      opts: |
+        -DNETCDF_ENABLE_CDF5=ON \
+        -DNETCDF_ENABLE_DAP_LONG_TESTS=ON \
+        -DNETCDF_ENABLE_EXAMPLE_TESTS=ON \
+        -DNETCDF_ENABLE_EXTRA_TESTS=ON \
+        -DNETCDF_ENABLE_FAILING_TESTS=ON \
+        -DNETCDF_ENABLE_FILTER_TESTING=ON \
+        -DNETCDF_ENABLE_LARGE_FILE_TESTS=ON
+
+  - uses: cmake/build
+
+  - runs: |
+      ctest --test-dir . --output-on-failure
+
+  - uses: cmake/install
+
+  - uses: strip
+
+subpackages:
+  - name: netcdf-dev
+    description: netcdf dev
+    pipeline:
+      - uses: split/dev
+    test:
+      pipeline:
+        - uses: test/pkgconf
+        - uses: test/tw/ldd-check
+
+  - name: netcdf-utils
+    description: netcdf utils
+    pipeline:
+      - runs: |
+          mkdir -p "${{targets.subpkgdir}}"/usr
+          mv "${{targets.destdir}}"/usr/bin "${{targets.subpkgdir}}"/usr/bin
+    test:
+      pipeline:
+        - uses: test/tw/help-check
+          with:
+            bins: nccopy ncdump ncgen
+
+update:
+  enabled: true
+  release-monitor:
+    identifier: 10354
+
+test:
+  pipeline:
+    - uses: test/tw/ldd-check
