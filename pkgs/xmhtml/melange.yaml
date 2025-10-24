@@ -1,0 +1,69 @@
+package:
+  name: xmhtml
+  version: "1.1.10"
+  epoch: 0
+  description: Motif widget set for displaying HTML 3.2 documents
+  url: https://sourceforge.net/projects/xmhtml/
+  copyright:
+    - license: LGPL-2.0-only
+
+environment:
+  contents:
+    packages:
+      - autoconf
+      - automake
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - fontconfig-dev
+      - libjpeg-turbo-dev
+      - libpng-dev
+      - libx11-dev
+      - libxft-dev
+      - libxmu-dev
+      - libxpm-dev
+      - libxt-dev
+      - motif-dev
+
+pipeline:
+  - uses: fetch
+    with:
+      uri: https://downloads.sourceforge.net/project/xmhtml/XmHTML-${{package.version}}.tgz
+      expected-sha256: 379542629958d70a61a49955f44833e215c82500d6bdcc12d4e7252deefe0435
+
+  - uses: autoconf/make
+
+  - runs: |
+      mkdir -p ${{targets.contextdir}}/usr/lib ${{targets.contextdir}}/usr/include
+      cp lib/libXmHTML.so.* ${{targets.contextdir}}/usr/lib/
+      cp -r include/XmHTML ${{targets.contextdir}}/usr/include/XmHTML
+
+  - uses: strip
+
+subpackages:
+  - name: xmhtml-dev
+    description: xmhtml dev
+    dependencies:
+      runtime:
+        - motif-dev
+        - libjpeg-turbo-dev
+        - libpng-dev
+        - libx11-dev
+        - libxft-dev
+        - libxmu-dev
+        - libxpm-dev
+        - libxt-dev
+    pipeline:
+      - uses: split/dev
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
+
+update:
+  enabled: true
+  release-monitor:
+    identifier: 10354
+
+test:
+  pipeline:
+    - uses: test/tw/ldd-check
