@@ -1,0 +1,58 @@
+package:
+  name: nifticlib
+  version: "3.0.1"
+  epoch: 0
+  description: Set of i/o libraries for reading and writing files in the nifti-1, nifti-2, and cifti file formats
+  url: https://github.com/NIFTI-Imaging/nifti_clib
+  copyright:
+    # Public domain https://github.com/NIFTI-Imaging/nifti_clib/blob/master/LICENSE
+    - license: custom
+
+environment:
+  contents:
+    packages:
+      - autoconf
+      - automake
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - cmake
+      - samurai
+      - zlib-dev
+
+pipeline:
+  - uses: git-checkout
+    with:
+      repository: https://github.com/NIFTI-Imaging/nifti_clib
+      tag: v${{package.version}}
+      expected-commit: 96b9954fafcf3bd69a4ee2091b0d707ed2077697
+
+  - uses: cmake/configure
+    with:
+      opts: |
+        -DBUILD_SHARED_LIBS=ON \
+        -DDOWNLOAD_TEST_DATA=OFF
+
+  - uses: cmake/build
+
+  - uses: cmake/install
+
+  - uses: strip
+
+subpackages:
+  - name: nifticlib-dev
+    description: nifticlib dev
+    pipeline:
+      - uses: split/dev
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
+
+update:
+  enabled: true
+  release-monitor:
+    identifier: 371318
+
+test:
+  pipeline:
+    - uses: test/tw/ldd-check
