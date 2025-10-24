@@ -1,0 +1,117 @@
+Description: fix multiple issues caught by newly introduced gcc 14 compiler.
+Author: Étienne Mollier <emollier@debian.org>
+Bug-Debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1075627
+Forwarded: no
+Last-Update: 2024-08-07
+---
+This patch header follows DEP-3: http://dep.debian.net/deps/dep3/
+--- volpack.orig/examples/classifyvolume.c
++++ volpack/examples/classifyvolume.c
+@@ -34,6 +34,7 @@
+ #include <fcntl.h>
+ #include "volume.h"
+ 
++int
+ main(argc, argv)
+ int argc;
+ char **argv;
+--- volpack.orig/examples/denfile.c
++++ volpack/examples/denfile.c
+@@ -218,6 +218,7 @@
+  * error or the full number of bytes could not be read.
+  */
+ 
++int
+ read_bytes(fd, buf, bytecount)
+ int fd;		/* file descriptor to read from */
+ char *buf;	/* memory in which to store data */
+@@ -246,6 +247,7 @@
+  * error or the full number of shorts could not be read.
+  */
+ 
++int
+ read_shorts(fd, sbuf, shortcount, swap)
+ int fd;		/* file descriptor to read from */
+ short *sbuf;	/* memory in which to store data */
+@@ -294,6 +296,7 @@
+  * error or the full number of words could not be read.
+  */
+ 
++int
+ read_words(fd, wbuf, wordcount, swap)
+ int fd;		/* file descriptor to read from */
+ int *wbuf;	/* memory in which to store data */
+@@ -342,6 +345,7 @@
+  * Return value is 1 if the write was succesful or 0 if there was an error.
+  */
+ 
++int
+ write_bytes(fd, buf, bytecount)
+ int fd;		/* file descriptor to write to */
+ char *buf;	/* memory containing data */
+--- volpack.orig/examples/makeoctree.c
++++ volpack/examples/makeoctree.c
+@@ -33,6 +33,7 @@
+ #include <unistd.h>
+ #include "volume.h"
+ 
++int
+ main()
+ {
+     vpContext *vpc;	/* rendering context */
+--- volpack.orig/examples/makevolume.c
++++ volpack/examples/makevolume.c
+@@ -33,6 +33,7 @@
+ #include <unistd.h>
+ #include "volume.h"
+ 
++int
+ main()
+ {
+     vpContext *vpc;	/* rendering context */
+--- volpack.orig/examples/rendervolume.c
++++ volpack/examples/rendervolume.c
+@@ -36,6 +36,7 @@
+ 
+ int StorePGM(char* image, int width, int height, char* filename);
+ 
++int
+ main(argc, argv)
+ int argc;
+ char **argv;
+@@ -166,7 +167,7 @@
+     vpCurrentMatrix(vpc, VP_MODEL);
+ 
+     /* set the image buffer */
+-    vpSetImage(vpc, (unsigned char *)image, IMAGE_WIDTH, IMAGE_HEIGHT,
++    vpSetImage(vpc, image[0], IMAGE_WIDTH, IMAGE_HEIGHT,
+ 	       IMAGE_WIDTH, VP_LUMINANCE);
+ 
+     /* render and store the images */
+@@ -199,7 +200,7 @@
+ 	    strcpy(filename, "brainsmall.ppm");
+ 	else
+ 	    sprintf(filename, "brainsmall_%d.ppm", n + 1000);
+-	StorePGM(image, IMAGE_WIDTH, IMAGE_HEIGHT, filename);
++	StorePGM(image[0], IMAGE_WIDTH, IMAGE_HEIGHT, filename);
+ 
+ 	/* rotate by 5 degrees for next image */
+ 	vpRotate(vpc, VP_Y_AXIS, 5.0);
+@@ -208,6 +209,7 @@
+     return(0);
+ }
+ 
++int
+ StorePGM(image, width, height, filename)
+ char *image;
+ int width, height;
+--- volpack.orig/examples/scalevolume.c
++++ volpack/examples/scalevolume.c
+@@ -43,6 +43,7 @@
+ 
+ int write_den(char* filename, unsigned char* data, int xlen, int ylen, int zlen);
+ 
++int
+ main(argc, argv)
+ int argc;
+ char **argv;

@@ -1,0 +1,77 @@
+package:
+  name: volpack
+  # 1.0b3 is not a valid APK version number so replace with _beta
+  version: "1.0_beta3"
+  epoch: 0
+  description: fast volume rendering library
+  url: https://graphics.stanford.edu/software/volpack/
+  copyright:
+    - license: BSD-3-Clause
+
+environment:
+  contents:
+    packages:
+      - autoconf
+      - automake
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+
+var-transforms:
+  - from: ${{package.version}}
+    match: _beta
+    replace: b
+    to: real-package-version
+
+pipeline:
+  - uses: fetch
+    with:
+      uri: http://deb.debian.org/debian/pool/main/v/volpack/volpack_${{vars.real-package-version}}.orig.tar.gz
+      expected-sha256: dce3d892ad34b2810fc80b0592c7224a4606f8ebfb8206421e24288753f230d7
+
+  # https://salsa.debian.org/med-team/volpack/-/tree/master/debian/patches
+  - uses: patch
+    with:
+      series: series
+
+  - uses: autoconf/configure
+    with:
+      opts: |
+        --disable-static \
+        CFLAGS="-std=gnu17"
+
+  - uses: autoconf/make
+
+  - uses: autoconf/make-install
+
+  - runs: |
+      mkdir -p ${{targets.contextdir}}/include
+      cp volpack.h ${{targets.contextdir}}/include
+
+  - uses: strip
+
+subpackages:
+  - name: volpack-dev
+    description: volpack dev
+    pipeline:
+      - uses: split/dev
+    test:
+      pipeline:
+        - uses: test/tw/ldd-check
+
+  - name: volpack-doc
+    description: volpack documentation
+    pipeline:
+      - uses: split/manpages
+    test:
+      pipeline:
+        - uses: test/docs
+
+update:
+  # Last official release was in 1995.
+  # Disable updater to not confuse version with variants.
+  enabled: false
+
+test:
+  pipeline:
+    - uses: test/tw/ldd-check

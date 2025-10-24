@@ -1,0 +1,104 @@
+Description: Add missing header includes and prototypes.
+Author: Andrey Rakhmatullin <wrar@debian.org>
+Bug-Debian: https://bugs.debian.org/1066485
+Last-Update: 2024-03-17
+
+Index: volpack-1.0b3/examples/scalevolume.c
+===================================================================
+--- volpack-1.0b3.orig/examples/scalevolume.c
++++ volpack-1.0b3/examples/scalevolume.c
+@@ -38,6 +38,10 @@
+ #include <stdio.h>
+ #include <volpack.h>
+ #include <malloc.h>
++#include <stdlib.h>
++#include <string.h>
++
++int write_den(char* filename, unsigned char* data, int xlen, int ylen, int zlen);
+ 
+ main(argc, argv)
+ int argc;
+Index: volpack-1.0b3/examples/rendervolume.c
+===================================================================
+--- volpack-1.0b3.orig/examples/rendervolume.c
++++ volpack-1.0b3/examples/rendervolume.c
+@@ -29,8 +29,13 @@
+  */
+ 
+ #include <stdlib.h>
++#include <string.h>
++#include <fcntl.h>
++#include <unistd.h>
+ #include "volume.h"
+ 
++int StorePGM(char* image, int width, int height, char* filename);
++
+ main(argc, argv)
+ int argc;
+ char **argv;
+Index: volpack-1.0b3/examples/denfile.c
+===================================================================
+--- volpack-1.0b3.orig/examples/denfile.c
++++ volpack-1.0b3/examples/denfile.c
+@@ -6,6 +6,9 @@
+  */
+ 
+ #include <stdio.h>
++#include <fcntl.h>
++#include <stdlib.h>
++#include <unistd.h>
+ 
+ #ifndef MIN
+ #define MIN(a, b) ((a) > (b) ? (b) : (a))
+@@ -17,6 +20,11 @@
+ 
+ #define MAX_READ_SIZE	8192	/* maximum # of bytes per read(2) call */
+ 
++int read_shorts(int fd, short* sbuf, int shortcount, int swap);
++int read_words(int fd, int* wbuf, int wordcount, int swap);
++int read_bytes(int fd, char* buf, int bytecount);
++int write_bytes(int fd, char* buf, int bytecount);
++
+ /*
+  * read_den
+  *
+Index: volpack-1.0b3/examples/classifyvolume.c
+===================================================================
+--- volpack-1.0b3.orig/examples/classifyvolume.c
++++ volpack-1.0b3/examples/classifyvolume.c
+@@ -29,6 +29,9 @@
+  */
+ 
+ #include <stdlib.h>
++#include <unistd.h>
++#include <string.h>
++#include <fcntl.h>
+ #include "volume.h"
+ 
+ main(argc, argv)
+Index: volpack-1.0b3/examples/makeoctree.c
+===================================================================
+--- volpack-1.0b3.orig/examples/makeoctree.c
++++ volpack-1.0b3/examples/makeoctree.c
+@@ -29,6 +29,8 @@
+  */
+ 
+ #include <stdlib.h>
++#include <fcntl.h>
++#include <unistd.h>
+ #include "volume.h"
+ 
+ main()
+Index: volpack-1.0b3/examples/makevolume.c
+===================================================================
+--- volpack-1.0b3.orig/examples/makevolume.c
++++ volpack-1.0b3/examples/makevolume.c
+@@ -29,6 +29,8 @@
+  */
+ 
+ #include <stdlib.h>
++#include <fcntl.h>
++#include <unistd.h>
+ #include "volume.h"
+ 
+ main()

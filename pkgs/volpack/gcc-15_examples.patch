@@ -1,0 +1,152 @@
+Author: Andreas Tille <tille@debian.org>
+Last-Update: 2025-10-06
+Description: Make sure examples are building with gcc-15 and thus autopkgtest is passing
+
+--- a/examples/classifyvolume.c
++++ b/examples/classifyvolume.c
+@@ -35,9 +35,7 @@
+ #include "volume.h"
+ 
+ int
+-main(argc, argv)
+-int argc;
+-char **argv;
++main(int argc, char **argv)
+ {
+     vpContext *vpc;	/* rendering context */
+     int volume_fd;	/* file descriptor for volume (input) */
+@@ -51,7 +49,6 @@ char **argv;
+     float density_ramp[DENSITY_MAX+1];	/* opacity as a function of density */
+     float gradient_ramp[GRADIENT_MAX+1];/* opacity as a function 
+ 					   of gradient magnitude */
+-    void *malloc();
+ 
+     /* check command-line arguments */
+     use_octree = 0;
+--- a/examples/makevolume.c
++++ b/examples/makevolume.c
+@@ -43,7 +43,6 @@ main()
+     unsigned volume_size;/* size of volume */
+     int density_fd;	/* file descriptor for density file (input) */
+     int volume_fd;	/* file descriptor for volume (output) */
+-    void *malloc();
+ 
+     /* create a context */
+     vpc = vpCreateContext();
+--- a/examples/scalevolume.c
++++ b/examples/scalevolume.c
+@@ -44,9 +44,7 @@
+ int write_den(char* filename, unsigned char* data, int xlen, int ylen, int zlen);
+ 
+ int
+-main(argc, argv)
+-int argc;
+-char **argv;
++main(int argc, char **argv)
+ {
+     char *src_file;				/* input file name */
+     char *dst_file;				/* output file name */
+@@ -58,8 +56,7 @@ char **argv;
+     unsigned dst_xlen, dst_ylen, dst_zlen;	/* size of output data */
+     unsigned dst_size;				/* size in bytes of output */
+     int code;
+-    double atof();
+-    unsigned char *read_den();
++    unsigned char *read_den(char *filename, int *xptr, int *yptr, int *zptr);
+ 
+     /* parse arguments */
+     if (argc < 6 || argc > 7) {
+--- a/examples/denfile.c
++++ b/examples/denfile.c
+@@ -33,9 +33,9 @@ int write_bytes(int fd, char* buf, int b
+  */
+ 
+ unsigned char *
+-read_den(filename, xptr, yptr, zptr)
+-char *filename;		/* name of file containing data */
+-int *xptr, *yptr, *zptr;/* volume dimensions (output parameters) */
++read_den(
++	char *filename,				/* name of file containing data */
++	int *xptr, int *yptr, int *zptr)	/* volume dimensions (output parameters) */
+ {
+     int fd;			/* file descriptor */
+     unsigned char *data;	/* data array */
+@@ -128,10 +128,10 @@ int *xptr, *yptr, *zptr;/* volume dimens
+  */
+ 
+ int
+-write_den(filename, data, xlen, ylen, zlen)
+-char *filename;		/* name of file to create */
+-unsigned char *data;	/* volume data */
+-int xlen, ylen, zlen;	/* volume dimensions */
++write_den(
++	char *filename,			/* name of file to create */
++	unsigned char *data,		/* volume data */
++	int xlen, int ylen, int zlen)	/* volume dimensions */
+ {
+     int fd;			/* file descriptor */
+     short map_version;		/* Version of this .den file                 */
+@@ -219,10 +219,10 @@ int xlen, ylen, zlen;	/* volume dimensio
+  */
+ 
+ int
+-read_bytes(fd, buf, bytecount)
+-int fd;		/* file descriptor to read from */
+-char *buf;	/* memory in which to store data */
+-int bytecount;	/* number of bytes to read */
++read_bytes(
++	int fd,		/* file descriptor to read from */
++	char *buf,	/* memory in which to store data */
++	int bytecount)	/* number of bytes to read */
+ {
+     int n;
+ 
+@@ -248,11 +248,11 @@ int bytecount;	/* number of bytes to rea
+  */
+ 
+ int
+-read_shorts(fd, sbuf, shortcount, swap)
+-int fd;		/* file descriptor to read from */
+-short *sbuf;	/* memory in which to store data */
+-int shortcount;	/* number of shorts to read */
+-int swap;	/* if nonzero then swap bytes */
++read_shorts(
++	int fd,		/* file descriptor to read from */
++	short *sbuf,	/* memory in which to store data */
++	int shortcount,	/* number of shorts to read */
++	int swap)	/* if nonzero then swap bytes */
+ {
+     int n, c;
+     int bytecount = shortcount * 2;
+@@ -297,11 +297,11 @@ int swap;	/* if nonzero then swap bytes
+  */
+ 
+ int
+-read_words(fd, wbuf, wordcount, swap)
+-int fd;		/* file descriptor to read from */
+-int *wbuf;	/* memory in which to store data */
+-int wordcount;	/* number of words to read */
+-int swap;	/* if nonzero then swap bytes */
++read_words(
++	int fd,		/* file descriptor to read from */
++	int *wbuf,	/* memory in which to store data */
++	int wordcount,	/* number of words to read */
++	int swap)	/* if nonzero then swap bytes */
+ {
+     int n, c;
+     int bytecount = wordcount * 4;
+@@ -346,10 +346,10 @@ int swap;	/* if nonzero then swap bytes
+  */
+ 
+ int
+-write_bytes(fd, buf, bytecount)
+-int fd;		/* file descriptor to write to */
+-char *buf;	/* memory containing data */
+-int bytecount;	/* number of bytes to write */
++write_bytes(
++	int fd,		/* file descriptor to write to */
++	char *buf,	/* memory containing data */
++	int bytecount)	/* number of bytes to write */
+ {
+     int n;
+ 

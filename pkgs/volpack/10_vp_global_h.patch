@@ -1,0 +1,15 @@
+Author: Andreas Tille <tille@debian.org>
+Description: Fix for vp_global.h
+
+--- volpack-1.0b3.orig/vp_global.h
++++ volpack-1.0b3/vp_global.h
+@@ -168,7 +168,9 @@
+  * Macros.                                                         *
+  *******************************************************************/
+ 
++#ifndef NULL
+ #define NULL 0
++#endif
+ 
+ #define MAX(a,b)        (((a)<(b)) ? (b) : (a))
+ #define MIN(a,b)        (((a)>(b)) ? (b) : (a))

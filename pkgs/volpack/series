@@ -1,0 +1,7 @@
+10_examples.patch
+10_vp_global_h.patch
+fixmanpages.patch
+fix-implicit-function-declaration.patch
+gcc-14.patch
+# gcc-15.patch
+gcc-15_examples.patch
