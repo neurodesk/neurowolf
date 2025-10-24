@@ -1,0 +1,63 @@
+package:
+  name: gts
+  version: "0.7.6"
+  epoch: 0
+  description: fast volume rendering library
+  url: https://gts.sourceforge.net
+  copyright:
+    - license: LGPL-2.0-only
+
+environment:
+  contents:
+    packages:
+      - autoconf
+      - automake
+      - build-base
+      - busybox
+      - ca-certificates-bundle
+      - glib-dev
+
+pipeline:
+  - uses: fetch
+    with:
+      uri: https://downloads.sourceforge.net/project/gts/gts/${{package.version}}/gts-${{package.version}}.tar.gz
+      expected-sha256: 059c3e13e3e3b796d775ec9f96abdce8f2b3b5144df8514eda0cc12e13e8b81e
+
+  - uses: autoconf/configure
+    with:
+      opts: |
+        --disable-static
+
+  - uses: autoconf/make
+
+  - uses: autoconf/make-install
+
+  - runs: |
+      # Prefix generic binary names
+      BIN="${{targets.contextdir}}/usr/bin"
+      mv "$BIN/delaunay" "$BIN/gtsdelaunay"
+      mv "$BIN/transform" "$BIN/gtstransform"
+
+  - uses: strip
+
+subpackages:
+  - name: gts-dev
+    description: gts dev
+    pipeline:
+      - uses: split/dev
+    test:
+      pipeline:
+        - uses: test/pkgconf
+        - uses: test/tw/ldd-check
+
+update:
+  enabled: true
+  release-monitor:
+    identifier: 376254
+
+test:
+  pipeline:
+    - uses: test/tw/ldd-check
+    - uses: test/tw/help-check
+      with:
+        bins: gtsdelaunay gts2dxf gts2oogl gts2stl gtscheck gtscompare gtstemplate stl2gts gtstransform
